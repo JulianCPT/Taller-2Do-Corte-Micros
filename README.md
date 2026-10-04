@@ -42,7 +42,7 @@ mueve el robot en la simulación, mientras un **panel de Tkinter** muestra el es
 
 - [🧭 Resumen de los tres puntos](#-resumen-de-los-tres-puntos)
 - [📸 Capturas](#-capturas)
-- [🎥 Videos de funcionamiento](#-videos-de-funcionamiento)
+- [🎥 Videos y GIFs de funcionamiento](#-videos-de-funcionamiento)
 - [📐 Arquitectura general](#-arquitectura-general)
 - [🔎 Análisis del proyecto](#-análisis-del-proyecto)
 - [📁 Estructura del repositorio](#-estructura-del-repositorio)
@@ -207,45 +207,63 @@ alterna entre **CAMINAR** y **BRAZOS**.
 | 3 | ▶️ [**Desplazamientos**](docs/videos/Funcionamiento%20Desplazamientos%20Punto%203.mp4) | El Atlas caminando, girando y dando pasos laterales |
 | 3 | ▶️ [**Brazos en diferentes ejes**](docs/videos/Funcionamiento%20Movimiento%20Brazo%20En%20Diferentes%20Ejes%20Punto%203.mp4) | Modo BRAZOS: hombro, codo y muñeca |
 
+<div align="center">
+
+**GIF de vista rápida:** el funcionamiento de cada punto en acción.
+
+<table>
+  <tr>
+    <td align="center" valign="top" width="33%">
+      <img src="docs/videos/GIF%20Punto%201.gif" width="100%" alt="GIF del Punto 1: enjambre de drones"/><br/>
+      <sub>🔵 <b>Punto 1</b> · enjambre de drones</sub>
+    </td>
+    <td align="center" valign="top" width="33%">
+      <img src="docs/videos/GIF%20Punto%202.gif" width="100%" alt="GIF del Punto 2: Baxter"/><br/>
+      <sub>🔴 <b>Punto 2</b> · Baxter</sub>
+    </td>
+    <td align="center" valign="top" width="33%">
+      <img src="docs/videos/GIF%20Punto%203.gif" width="100%" alt="GIF del Punto 3: Atlas"/><br/>
+      <sub>🟣 <b>Punto 3</b> · Atlas</sub>
+    </td>
+  </tr>
+</table>
+
+</div>
+
 <img src="https://capsule-render.vercel.app/api?type=rect&color=0:0B3D2E,100:1F8A4C&height=3&section=header" width="100%"/>
 
 ## 📐 Arquitectura general
 
 Los tres puntos comparten **la misma arquitectura**: cambia el robot y la consola, no el patrón.
+Cada columna es un punto, con su propio color: 🔵 **Punto 1**, 🔴 **Punto 2**, 🟣 **Punto 3**.
 
-```mermaid
-flowchart LR
-    U["👤 Usuario"] --> HW
+<div align="center">
 
-    subgraph HW["🔌 Consola física"]
-        direction TB
-        IN["Teclado matricial (P1)<br/>Joystick + pot + botones (P2, P3)"]
-        ESP["ESP32<br/>lee entradas, filtra y calibra"]
-        IN --> ESP
-    end
+<table>
+  <tr>
+    <td align="center" valign="top" width="33%">
+      <img src="docs/im%C3%A1genes/diagrama-arquitectura-punto-1.svg" width="100%" alt="Arquitectura del Punto 1: teclado matricial, ESP32, Python y drones"/>
+    </td>
+    <td align="center" valign="top" width="33%">
+      <img src="docs/im%C3%A1genes/diagrama-arquitectura-punto-2.svg" width="100%" alt="Arquitectura del Punto 2: joystick, ESP32, Python y Baxter"/>
+    </td>
+    <td align="center" valign="top" width="33%">
+      <img src="docs/im%C3%A1genes/diagrama-arquitectura-punto-3.svg" width="100%" alt="Arquitectura del Punto 3: joystick, ESP32, Python y Atlas"/>
+    </td>
+  </tr>
+</table>
 
-    HW -- "UART por USB<br/>115200 baudios<br/>líneas de texto" --> PY
-
-    subgraph PY["🐍 PC — Python"]
-        direction TB
-        RX["pyserial<br/>lee y valida la línea"]
-        LOGIC["Lógica de control<br/>modos, zonas muertas,<br/>suavizado, límites"]
-        SIM["PyBullet<br/>robot simulado"]
-        PAN["Panel Tkinter<br/>estado en vivo"]
-        RX --> LOGIC --> SIM
-        LOGIC --> PAN
-    end
-
-    SIM --> VIEW["🖥️ Ventana de PyBullet"]
-    VIEW -.-> U
-```
+</div>
 
 | Símbolo | Significado |
 |:---:|:---|
 | **→** | Relación de un solo sentido: los datos fluyen en esa dirección |
-| **Línea punteada** | Retroalimentación visual: el usuario ve la simulación y reacciona |
-| 🔌 **Consola física** | Todo lo que está sobre la protoboard: entradas + ESP32 |
-| 🐍 **PC — Python** | Todo el "cerebro": validación, modos, cinemática por articulación y simulación |
+| **⇢ Línea punteada** | Retroalimentación visual: el usuario ve la simulación y reacciona |
+| ⬜ **Caja gris clara** | El usuario y las salidas secundarias (panel de estado, *logger*) |
+| 🎨 **Caja de color claro** | Consola física y etapas de software de cada punto |
+| ⬛ **Caja de color oscuro** | La pieza central: la ESP32 y la etapa de lógica principal en Python |
+| 🟨 **Caja ámbar** | Canal de comunicación: puerto serie USB a 115200 baudios, con el formato de la línea |
+| 🟩 **Caja verde** | Lo que se simula en PyBullet: drones, Baxter o Atlas |
 
 > 💡 **Idea clave:** la ESP32 **no sabe nada de robótica**. Solo lee entradas, las limpia
 > (zona muerta, filtro, antirrebote) y las reporta como texto. Toda la lógica de modos, los
@@ -294,9 +312,15 @@ Taller-2Do-Corte-Micros/
 │   ├── atlas_esp32_control.py              # Atlas en PyBullet + panel Tkinter (PC)
 │   └── atlas_console/
 │       └── atlas_console.ino               # Firmware: joystick, pot y 4 botones
-├── docs/                                   # Capturas y videos de demostración
-│   ├── imágenes/                           # Circuito, montaje completo e interfaz de cada punto
-│   └── videos/                             # Videos de funcionamiento (.mp4)
+├── docs/                                   # Capturas, esquemas y videos de demostración
+│   ├── imágenes/
+│   │   ├── diagrama-arquitectura-punto-1.svg   # Esquema de arquitectura del Punto 1
+│   │   ├── diagrama-arquitectura-punto-2.svg   # Esquema de arquitectura del Punto 2
+│   │   ├── diagrama-arquitectura-punto-3.svg   # Esquema de arquitectura del Punto 3
+│   │   └── ...                                 # Circuito, montaje completo e interfaz de cada punto
+│   └── videos/
+│       ├── GIF Punto 1.gif · GIF Punto 2.gif · GIF Punto 3.gif   # Vista rápida
+│       └── ...                                 # Videos de funcionamiento (.mp4)
 ├── requirements.txt                        # Dependencias de Python
 └── README.md
 ```
