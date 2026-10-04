@@ -1,0 +1,7 @@
+pybullet>=3.2.5       # simulacion fisica (los 3 puntos)
+numpy>=1.24           # vectores y trayectorias
+pyserial>=3.5         # puerto serie hacia la ESP32
+matplotlib>=3.7       # graficas de resultados (Punto 1)
+# gym-pybullet-drones se instala aparte (Punto 1):
+#   git clone https://github.com/utiasDSL/gym-pybullet-drones.git
+#   cd gym-pybullet-drones && pip install -e .
